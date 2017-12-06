@@ -30,10 +30,12 @@ feature.list    	<- c(
 				, 'higher', 'romantic', 'famrel', 'freetime', 'goout', 'Dalc', 'Walc', 'health', 'absences')
 target          	<- "G3"
 
-mod.glm 		<- glm(G3~., data=train.df)
-mod.dt          	<- rpart(G3~., data=train.df)
-mod.rf			<- randomForest(G3~., data=train.df)
-mod.gbm			<- gbm(G3~., data=train.df, distribution = "gaussian")
+formu                   <-  as.formula(paste( target, "~", paste(feature.list, collapse = " + ")))
+
+mod.glm 		<- glm(formu, data=train.df)
+mod.dt          	<- rpart(formu, data=train.df)
+mod.rf			<- randomForest(formu, data=train.df)
+mod.gbm			<- gbm(formu, data=train.df, distribution = "gaussian")
 
 glm.preds		<- predict(mod.glm, test.df)
 dt.preds        	<- predict(mod.dt, test.df)
