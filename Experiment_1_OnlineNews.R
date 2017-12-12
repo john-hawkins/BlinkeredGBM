@@ -1,9 +1,5 @@
-library(rpart)
-library(randomForest)
-library(gbm)
 library(data.table)
-
-source("BlinkeredGBTreeModel.R")
+source("Experiment_1.R")
 
 df                	<- fread("data/OnlineNews/OnlineNewsPopularity.csv")
 
@@ -16,50 +12,8 @@ test.df         	<- df[24001:39644,]
 feature.list 		<- colnames(df)[3:60]
 target          	<- "shares"
 
-formu			<-  as.formula(paste( target, "~", paste(feature.list, collapse = " + ")))
+results.one             <- runExperimentOne(feature.list, target, train.df, valid.df, test.df )
 
-mod.glm 		<- glm(formu, data=train.df)
-mod.dt          	<- rpart(formu, data=train.df)
-mod.rf			<- randomForest(formu, data=train.df, ntree=100)
-mod.gbm			<- gbm(formu, data=train.df, n.trees=100, distribution="gaussian")
-
-mod.bgbm                <- BlinkeredGBTreeModel(feature.list, target, train.df, valid.df )
-
-glm.preds		<- predict(mod.glm, test.df)
-dt.preds        	<- predict(mod.dt, test.df)
-rf.preds        	<- predict(mod.rf, test.df)
-gbm.preds        	<- predict(mod.gbm, test.df,n.trees=100)
-bgbm.preds               <- forecast(mod.bgbm, test.df)
-
-results.names           <- c("model/metric","GLM", "Decision Tree", "Random Forest", "GBM", "BGBM")
-
-results.mae		<- c(
-				"MAE",
-				mean(abs(glm.preds - test.df$shares)),
-				mean(abs(dt.preds - test.df$shares)),
-				mean(abs(rf.preds - test.df$shares)),
-				mean(abs(gbm.preds - test.df$shares)),
-				mean(abs(bgbm.preds - test.df$shares))
-			)
-results.mape            <- c(
-				"MAPE",
-                                mean(100*abs(glm.preds - test.df$shares)/test.df$shares),
-                                mean(100*abs(dt.preds - test.df$shares)/test.df$shares),
-                                mean(100*abs(rf.preds - test.df$shares)/test.df$shares),
-                                mean(100*abs(gbm.preds - test.df$shares)/test.df$shares),
-                                mean(100*abs(bgbm.preds - test.df$shares)/test.df$shares)
-                        )
-results.mse             <- c(
-				"MSE",
-                                mean((glm.preds - test.df$shares)^2),
-                                mean((dt.preds - test.df$shares)^2),
-                                mean((rf.preds - test.df$shares)^2),
-                                mean((gbm.preds - test.df$shares)^2),
-                                mean((bgbm.preds - test.df$shares)^2)
-                        )
-
-results.tab		<- cbind(results.names, results.mae, results.mse, results.mape)
-
-write.table(results.tab, file = "results/online_news_experiment.csv", append = FALSE, quote = TRUE, sep = ",", eol = "\n", na = "NA", dec = ".", row.names = FALSE, col.names = FALSE)
+writeReusltsTab(results.one, "results/Exp_1_OnlineNews.csv" )
 
 

@@ -26,7 +26,8 @@ feature.list    	<- c(
 				, 'higher', 'romantic', 'famrel', 'freetime', 'goout', 'Dalc', 'Walc', 'health', 'absences')
 target          	<- "G3"
 
-runExperimentOne(feature.list, target, train.df, valid.df, test.df, "Exp_1_StudentPerf.csv" ) 
+results.one             <- runExperimentOne(feature.list, target, train.df, valid.df, test.df )
 
-runExperimentTwo(feature.list, target, train.df, valid.df, test.df, "Exp_2_StudentPerf.csv" ) 
+writeReusltsTab(results.one, "Exp_1_StudentPerf.csv" )
+
 

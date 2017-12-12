@@ -18,7 +18,7 @@ library(data.table)
 source("BlinkeredGBTreeModel.R")
 
 
-runExperimentOne	<- function(feature.list, target, train.df, valid.df, test.df, outputfile ) {
+runExperimentOne	<- function(feature.list, target, train.df, valid.df, test.df ) {
 
  
 	formu                   <-  as.formula(paste( target, "~", paste(feature.list, collapse = " + ")))
@@ -62,7 +62,9 @@ runExperimentOne	<- function(feature.list, target, train.df, valid.df, test.df, 
                         )
 
 	results.tab		<- cbind(results.names, results.mae, results.mse, results.mape)
-	results.tab
-	#	write.table(results.tab, file=outputfile, append = FALSE, quote = TRUE, sep = ",", eol = "\n", na = "NA", dec = ".", row.names = FALSE, col.names = FALSE)
+	return(results.tab)
 }
 
+writeReusltsTab		<- function(results.tab, outputfile) {
+	write.table(results.tab, file=outputfile, append = FALSE, quote = TRUE, sep = ",", eol = "\n", na = "NA", dec = ".", row.names = FALSE, col.names = FALSE)
+}
