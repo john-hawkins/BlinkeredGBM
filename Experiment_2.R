@@ -1,40 +1,44 @@
 #
-# EXPERIMENT ONE
+# EXPERIMENT TWO
 #
 # GIVEN A REGRESSION DATA SET WITH TRAIN,VALID AND TEST SPLITS
-# RUN A SERIES OF MODELS USING DEFAULT PARAMETERS AND
-# COMPARE THE REUSLTS USING SEVERAL STANDARD METRICS.
+# RUN A SERIES OF MODELS WITH A SIMPLE GRID SEARCH OVER COMMONLY
+# TUNED META-PARAMETERS.
 #
-# THE GOAL IS TO SEE HOW THE MODELS RANK UNDER THE PRESUMPTION
-# THAT YOU WANT TO BUILD A MODEL QUICKLY, AND BELIEVE THAT META-PARAMETER
-# OPTIMISATION WILL ONLY RESULT IN MODEST GAINS
+# THE GOAL IS TO SEE HOW THE MODELS PERFORMANCES RANK AFTER A TYPICAL
+# ROUND OF META-PARAMETER TUNING
 #
-
-
+library(caret)
 library(rpart)
 library(randomForest)
 library(gbm)
 library(data.table)
 source("BlinkeredGBTreeModel.R")
 
-runExperimentOne	<- function(feature.list, target, train.df, valid.df, test.df ) {
 
- 
+runExperimentTwo	<- function(feature.list, target, train.df, valid.df, test.df, outputfile ) {
+
 	formu                   <-  as.formula(paste( target, "~", paste(feature.list, collapse = " + ")))
 
-	mod.glm 		<- glm(formu, data=train.df)
-	mod.dt          	<- rpart(formu, data=train.df)
+	#
+	# WE USE THE CARET GRID SEARCH TO TEST A RANGE OF META-PARAMETERS
+
+	control 		<- trainControl(method="repeatedcv", number=10, repeats=3)
+	grid 			<- expand.grid( cp =c(0.1, 0.05, 0.03, 0.01, 0.005) )
+	mod.dt 			<- train( formu, data=train.df, method="rpart", trControl=control, tuneGrid=grid)
+	#print(mod.dt)
+
 	mod.rf			<- randomForest(formu, data=train.df)
 	mod.gbm			<- gbm(formu, data=train.df, distribution = "gaussian")
-	mod.bgbm		<- BlinkeredGBTreeModel(feature.list, target, train.df, valid.df ) 
 
-	glm.preds		<- predict(mod.glm, test.df)
+	mod.bgbm		<- BlinkeredGBTreeModel(feature.list, target, train.df, valid.df )
+ 
 	dt.preds        	<- predict(mod.dt, test.df)
 	rf.preds        	<- predict(mod.rf, test.df)
 	gbm.preds        	<- predict(mod.gbm, test.df,n.trees=100)
-	bgbm.preds              <- forecast(mod.bgbm, test.df)
+	bgbm.preds               <- forecast(mod.bgbm, test.df)
 
-	results.names           <- c("model/metric","GLM", "Decision Tree", "Random Forest", "GBM", "BGB Tree")
+	results.names		<- c("model/metric","GLM", "Decision Tree", "Random Forest", "GBM", "BGBM")
 	results.mae		<- c(
 				"MAE",
 				mean(abs(glm.preds - test.df[[target]])),
@@ -61,9 +65,7 @@ runExperimentOne	<- function(feature.list, target, train.df, valid.df, test.df )
                         )
 
 	results.tab		<- cbind(results.names, results.mae, results.mse, results.mape)
-	return(results.tab)
-}
 
-writeReusltsTab		<- function(results.tab, outputfile) {
 	write.table(results.tab, file=outputfile, append = FALSE, quote = TRUE, sep = ",", eol = "\n", na = "NA", dec = ".", row.names = FALSE, col.names = FALSE)
 }
+

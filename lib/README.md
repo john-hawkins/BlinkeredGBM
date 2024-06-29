@@ -1,6 +1,5 @@
 Lib
 ===
 
-
-Some reusable fucntions and classes
+Some re-usable functions and classes
 

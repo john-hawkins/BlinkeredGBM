@@ -1,7 +1,6 @@
-library(rpart)
-library(randomForest)
-library(gbm)
 library(data.table)
+
+source("Experiment_1.R")
 
 source("BlinkeredGBTreeModel.R")
 source("BlinkeredGBLinearModel.R")
@@ -20,6 +19,10 @@ formu                   <-  as.formula(paste( target, "~", paste(feature.list, c
 train.df        	<- df[1:100000,]
 valid.df        	<- df[100001:200000,]
 test.df         	<- df[463716:nrow(df),]
+
+results.one             <- runExperimentOne(feature.list, target, train.df, valid.df, test.df )
+
+writeReusltsTab(results.one, "Exp_1_StudentPerf.csv" )
 
 mod.glm 		<- glm(formu, data=train.df)
 mod.dt          	<- rpart(formu, data=train.df)
